@@ -1,7 +1,7 @@
 import os
 import pickle
-import tkinter
-
+import tkinter as tk
+from tkinter import filedialog
 import numpy
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -108,7 +108,7 @@ def example():
 
 
 # Give list of images that are made up of 64 values each
-def predict_images(model, images, labels_expected=None):
+def predict_images(images, model=load_model("handdrawn_digits_model.pkl"), labels_expected=None, plot_results=True):
     # Format parameters
     for i in range(len(images)):
         # Turn input image into numpy.ndarray
@@ -126,14 +126,18 @@ def predict_images(model, images, labels_expected=None):
     print("This image is predicted to be a " + str(imgs_predicted))
 
     # Plot the results
-    plt.figure(num="Prediction Results", figsize=(15, 7))  # Edits the window title and size
-    for i, image in enumerate(images):
-        reshaped_image = image.reshape(8, 8)
-        plt.subplot(3, 10, i+1)  # Only works with up to 30 digits atm
-        plt.axis("off")
-        plt.imshow(reshaped_image, cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.title("Expected: %i \n Predicted: %i" % (labels_expected[i], imgs_predicted[i]))
-    plt.show()
+    if plot_results:
+        plt.figure(num="Prediction Results", figsize=(15, 7))  # Edits the window title and size
+        for i, image in enumerate(images):
+            reshaped_image = image.reshape(8, 8)
+            plt.subplot(3, 10, i+1)  # Only works with up to 30 digits atm
+            plt.axis("off")
+            plt.imshow(reshaped_image, cmap=plt.cm.gray_r, interpolation='nearest')
+            if labels_expected is None:
+                plt.title("Predicted: %i" % (imgs_predicted[i]))
+            else:
+                plt.title("Expected: %i \n Predicted: %i" % (labels_expected[i], imgs_predicted[i]))
+        plt.show()
 
     if labels_expected is not None:
         print("Classification Report %s:\n%s\n"
@@ -160,24 +164,44 @@ def process_image(filename):
     return normalized_pixels
 
 
+def initialize_interface():
+    def handle_pick_image():
+        filename = filedialog.askopenfilename(title="Select image to predict: ",
+                                              filetypes=[("Image File", ".jpg .png .gif .tif .bmp")])
+        predict_images([process_image(filename)], plot_results=True)
+
+    window = tk.Tk()
+    window.geometry("500x500")
+    window.title("Image Predicter")
+
+    predict_button = tk.Button(text="Predict", command=handle_pick_image)
+    predict_button.pack()
+
+    return window
+
+
 def main(train_model=True):
     model_filename = "handdrawn_digits_model.pkl"
     if train_model:
         print("Training new hand drawn digits model.")
         create_trained_model(model_filename)
     model = load_model(model_filename)
-    # Get hand drawn number files and process each, and putting them in a list
-    handdrawn_numbers_path = os.path.dirname(os.path.realpath(__file__))
-    images = []
-    for (root, dirs, file) in os.walk(handdrawn_numbers_path):
-        for f in file:
-            if '.png' in f:
-                images.append(process_image(os.path.join(root, f)))
 
-    # Predict drawn digit
-    # List of labels that show what each digit actually is
-    actual_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    predict_images(model, images, actual_values)
+    gui = initialize_interface()
+    gui.mainloop()
+
+    # Get hand drawn number files and process each, and putting them in a list
+    # handdrawn_numbers_path = os.path.dirname(os.path.realpath(__file__))
+    # images = []
+    # for (root, dirs, file) in os.walk(handdrawn_numbers_path):
+    #     for f in file:
+    #         if '.png' in f:
+    #             images.append(process_image(os.path.join(root, f)))
+    #
+    # # Predict drawn digit
+    # # List of labels that show what each digit actually is
+    # actual_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    # predict_images(images, model, actual_values)
 
 
 # Start here
