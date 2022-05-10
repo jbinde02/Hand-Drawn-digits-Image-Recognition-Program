@@ -9,9 +9,8 @@ from sklearn.datasets import load_digits
 from sklearn import metrics
 from sklearn import svm
 
-# https://howtocreateapps.com/image-recognition-python/
-# https://www.techwithtim.net/tutorials/python-module-walk-throughs/turtle-module/drawing-with-mouse/
 
+# https://howtocreateapps.com/image-recognition-python/
 
 def create_trained_model(model_filename):
     # This bit trains the model to predict digits
@@ -50,7 +49,7 @@ def show_image(image):
 
 
 # Predicts half of the images dataset
-def example():
+def website_example():
     # This bit trains the model to predict digits
     # Loads the data
     digits_data = load_digits()
@@ -108,7 +107,7 @@ def example():
 
 
 # Give list of images that are made up of 64 values each
-def predict_images(images, model=load_model("handdrawn_digits_model.pkl"), labels_expected=None, plot_results=True):
+def predict_images(images, model, labels_expected=None, plot_results=True):
     # Format parameters
     for i in range(len(images)):
         # Turn input image into numpy.ndarray
@@ -130,7 +129,7 @@ def predict_images(images, model=load_model("handdrawn_digits_model.pkl"), label
         plt.figure(num="Prediction Results", figsize=(15, 7))  # Edits the window title and size
         for i, image in enumerate(images):
             reshaped_image = image.reshape(8, 8)
-            plt.subplot(3, 10, i+1)  # Only works with up to 30 digits atm
+            plt.subplot(3, 10, i + 1)  # Only works with up to 30 digits atm
             plt.axis("off")
             plt.imshow(reshaped_image, cmap=plt.cm.gray_r, interpolation='nearest')
             if labels_expected is None:
@@ -145,6 +144,7 @@ def predict_images(images, model=load_model("handdrawn_digits_model.pkl"), label
         print("Confusion matrix:\n%s" % metrics.confusion_matrix(labels_expected, imgs_predicted))
 
 
+# Process images to be similar to what the model was trained with
 def process_image(filename):
     img = Image.open(filename)  # 64x64 size drawing of digit
     img = img.resize((8, 8))  # resize to 8x8
@@ -153,7 +153,8 @@ def process_image(filename):
     min_pixel = 256
     max_pixel = 0
     for pixel in pixels:
-        fpixel = abs(pixel[0] - 255)  # This is to make it so that white will end up with a value of zero and shades of black greater than 0
+        fpixel = abs(pixel[
+                         0] - 255)  # This is to make it so that white will end up with a value of zero and shades of black greater than 0
         formatted_pixels.append(fpixel)
         if fpixel > max_pixel:
             max_pixel = fpixel
@@ -164,22 +165,8 @@ def process_image(filename):
     return normalized_pixels
 
 
-def initialize_interface():
-    def handle_pick_image():
-        filename = filedialog.askopenfilename(title="Select image to predict: ",
-                                              filetypes=[("Image File", ".jpg .png .gif .tif .bmp")])
-        predict_images([process_image(filename)], plot_results=True)
-
-    window = tk.Tk()
-    window.geometry("500x500")
-    window.title("Image Predicter")
-
-    predict_button = tk.Button(text="Predict", command=handle_pick_image)
-    predict_button.pack()
-
-    return window
-
-
+# Example of model predicting 30 images
+# Actual value labels are given
 def main(train_model=True):
     model_filename = "handdrawn_digits_model.pkl"
     if train_model:
@@ -187,32 +174,51 @@ def main(train_model=True):
         create_trained_model(model_filename)
     model = load_model(model_filename)
 
-    gui = initialize_interface()
-    gui.mainloop()
-
     # Get hand drawn number files and process each, and putting them in a list
-    # handdrawn_numbers_path = os.path.dirname(os.path.realpath(__file__))
-    # images = []
-    # for (root, dirs, file) in os.walk(handdrawn_numbers_path):
-    #     for f in file:
-    #         if '.png' in f:
-    #             images.append(process_image(os.path.join(root, f)))
-    #
-    # # Predict drawn digit
-    # # List of labels that show what each digit actually is
-    # actual_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    # predict_images(images, model, actual_values)
+    handdrawn_numbers_path = os.path.dirname(os.path.realpath(__file__))
+    images = []
+    for (root, dirs, file) in os.walk(handdrawn_numbers_path):
+        for f in file:
+            if '.png' in f:
+                images.append(process_image(os.path.join(root, f)))
+
+    # Predict drawn digit
+    # List of labels that show what each digit actually is
+    actual_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    predict_images(images, model, actual_values)
+
+
+class ImagePredictor:
+    def __init__(self, model):
+        self.gui = None
+        self.model = model
+
+    def initialize_interface(self):
+        def handle_pick_image():
+            filename = filedialog.askopenfilename(title="Select image to predict: ",
+                                                  filetypes=[("Image File", ".jpg .png .gif .tif .bmp")])
+            predict_images([process_image(filename)], self.model, plot_results=True)
+
+        window = tk.Tk()
+        window.geometry("100x100")
+        window.title("Image Predictor")
+
+        predict_button = tk.Button(text="Predict", command=handle_pick_image)
+        predict_button.pack()
+
+        return window
+
+    def display_user_interface(self):
+        self.gui = self.initialize_interface()
+        self.gui.mainloop()
 
 
 # Start here
-train_model = False
-main(train_model)
+img_predictor = ImagePredictor(load_model("handdrawn_digits_model.pkl"))
+img_predictor.display_user_interface()
+
 
 # Precision = True Positive/(True Positive + False Positive)
 # Recall = True Positive/(True Positive + False Negative)
 # F1-Score = 2/((1/Recall) + (1/Precision))
 # Confusion Matrix: Columns = A labels Precision, Rows = A labels Recall
-
-# May be useful
-# https://stackoverflow.com/questions/41666627/using-own-image-in-sklearn-digits-example
-# https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image
