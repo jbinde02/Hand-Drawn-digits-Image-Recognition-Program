@@ -3,6 +3,8 @@ import pickle
 import tkinter as tk
 from tkinter import filedialog
 import numpy
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.datasets import load_digits
@@ -23,7 +25,7 @@ def create_trained_model(model_filename):
     # Get the target labels
     labels = digits_data.target
     # The model
-    classify = svm.SVC(gamma=0.001)
+    classify = svm.SVC()
     # flatten sample images are stored in img variable
     img_half = img[:img_samples // 2]
     # target labels are stored in labels variable
@@ -143,6 +145,8 @@ def predict_images(images, model, labels_expected=None, plot_results=True):
               % (model, metrics.classification_report(labels_expected, imgs_predicted)))
         print("Confusion matrix:\n%s" % metrics.confusion_matrix(labels_expected, imgs_predicted))
 
+    return imgs_predicted, images[0]
+
 
 # Process images to be similar to what the model was trained with
 def process_image(filename):
@@ -197,14 +201,26 @@ class ImagePredictor:
         def handle_pick_image():
             filename = filedialog.askopenfilename(title="Select image to predict: ",
                                                   filetypes=[("Image File", ".jpg .png .gif .tif .bmp")])
-            predict_images([process_image(filename)], self.model, plot_results=True)
+            predictions = predict_images([process_image(filename)], self.model, plot_results=False)
+
+            plot.imshow(predictions[1].reshape(8, 8), cmap=plt.cm.gray_r, interpolation='nearest')
+            plot.set_title("Predicted: %i" % (predictions[0][0]))
+            canvas.draw()
 
         window = tk.Tk()
-        window.geometry("100x100")
+        window.geometry("300x300")
         window.title("Image Predictor")
 
         predict_button = tk.Button(text="Predict", command=handle_pick_image)
         predict_button.pack()
+
+        # https://www.geeksforgeeks.org/how-to-embed-matplotlib-charts-in-tkinter-gui/
+        figure = Figure(figsize=(5, 5), dpi=100)
+        plot = figure.add_subplot(1, 1, 1)
+        plot.axis("off")
+        canvas = FigureCanvasTkAgg(figure, master=window)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
 
         return window
 
@@ -214,6 +230,7 @@ class ImagePredictor:
 
 
 # Start here
+# main()
 img_predictor = ImagePredictor(load_model("handdrawn_digits_model.pkl"))
 img_predictor.display_user_interface()
 
