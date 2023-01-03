@@ -1,5 +1,6 @@
 import os
 import pickle
+import sys
 import tkinter as tk
 from tkinter import filedialog
 import numpy
@@ -228,11 +229,23 @@ class ImagePredictor:
         self.gui = self.initialize_interface()
         self.gui.mainloop()
 
+def run():
+    img_predictor = ImagePredictor(load_model("handdrawn_digits_model.pkl"))
+    img_predictor.display_user_interface()
+
 
 # Start here
-# main()
-img_predictor = ImagePredictor(load_model("handdrawn_digits_model.pkl"))
-img_predictor.display_user_interface()
+command = None
+if len(sys.argv) > 1:
+    command = sys.argv[1]
+if command is None or command == "help":
+    print("Arguments: help, run, main, website-example")
+elif command == "main":
+    main(False)
+elif command == "run":
+    run()
+elif command == "website-example":
+    website_example()
 
 
 # Precision = True Positive/(True Positive + False Positive)
