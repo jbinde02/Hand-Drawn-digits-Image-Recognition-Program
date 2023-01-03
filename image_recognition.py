@@ -15,7 +15,7 @@ from sklearn import svm
 
 # https://howtocreateapps.com/image-recognition-python/
 
-def create_trained_model(model_filename):
+def create_trained_model_premade(model_filename):
     # This bit trains the model to predict digits
     # Loads the data
     digits_data = load_digits()
@@ -37,6 +37,20 @@ def create_trained_model(model_filename):
     # End training
     # Save model
     with open(model_filename, 'wb') as file:
+        pickle.dump(classify, file)
+
+
+def create_trained_model(model_filename, training_set_path):
+    digits_data = list()
+    labels = list()
+
+    for (root, dirs, files) in os.walk(os.path.join(os.path.dirname(__file__), 'handdrawn_numbers')):
+        for file in files:
+            digits_data.append(process_image(os.path.join(os.path.dirname(__file__), 'handdrawn_numbers', file)))
+            labels.append(file.split('_')[0][1])
+    classify = svm.SVC()
+    classify.fit(digits_data, labels)
+    with open(model_filename + ".pkl", 'wb') as file:
         pickle.dump(classify, file)
 
 
@@ -176,7 +190,7 @@ def main(train_model=True):
     model_filename = "handdrawn_digits_model.pkl"
     if train_model:
         print("Training new hand drawn digits model.")
-        create_trained_model(model_filename)
+        create_trained_model_premade(model_filename)
     model = load_model(model_filename)
 
     # Get hand drawn number files and process each, and putting them in a list
@@ -205,7 +219,7 @@ class ImagePredictor:
             predictions = predict_images([process_image(filename)], self.model, plot_results=False)
 
             plot.imshow(predictions[1].reshape(8, 8), cmap=plt.cm.gray_r, interpolation='nearest')
-            plot.set_title("Predicted: %i" % (predictions[0][0]))
+            plot.set_title("Predicted: %s" % (predictions[0][0]))
             canvas.draw()
 
         window = tk.Tk()
@@ -229,6 +243,7 @@ class ImagePredictor:
         self.gui = self.initialize_interface()
         self.gui.mainloop()
 
+
 def run():
     img_predictor = ImagePredictor(load_model("handdrawn_digits_model.pkl"))
     img_predictor.display_user_interface()
@@ -239,14 +254,18 @@ command = None
 if len(sys.argv) > 1:
     command = sys.argv[1]
 if command is None or command == "help":
-    print("Arguments: help, run, main, website-example")
+    print("Arguments: help, run, main, website-example, custom")
 elif command == "main":
     main(False)
 elif command == "run":
     run()
 elif command == "website-example":
     website_example()
-
+elif command == "custom":
+    create_trained_model("dog", "")
+    model = load_model(os.path.join(os.path.dirname(__file__), "dog.pkl"))
+    img_predictor = ImagePredictor(model)
+    img_predictor.display_user_interface()
 
 # Precision = True Positive/(True Positive + False Positive)
 # Recall = True Positive/(True Positive + False Negative)
