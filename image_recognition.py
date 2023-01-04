@@ -15,6 +15,7 @@ from sklearn import svm
 
 # https://howtocreateapps.com/image-recognition-python/
 
+#Create a model using the dataset provided with SKLearn
 def create_trained_model_premade(model_filename):
     # This bit trains the model to predict digits
     # Loads the data
@@ -63,64 +64,6 @@ def load_model(model_filename):
 def show_image(image):
     plt.matshow(image)
     plt.show()
-
-
-# Predicts half of the images dataset
-def website_example():
-    # This bit trains the model to predict digits
-    # Loads the data
-    digits_data = load_digits()
-    # Get the total number of samples
-    img_samples = len(digits_data.images)
-    # Get the handwritten images
-    img = digits_data.images.reshape(img_samples, -1)
-    # Get the target labels
-    labels = digits_data.target
-    # The model
-    classify = svm.SVC(gamma=0.001)
-    # flatten sample images are stored in img variable
-    img_half = img[:img_samples // 2]
-    # target labels are stored in labels variable
-    labels_half = labels[:img_samples // 2]
-    # Training: First is half the images, second is all the images
-    # classify.fit(img_half, labels_half)
-    classify.fit(img, labels)
-    # End training
-
-    images = list(zip(digits_data.images, digits_data.target))
-    plt.figure(figsize=(4, 4))
-    for i, (image, label) in enumerate(images[:10]):
-        # initializing subplot of 3x5
-        plt.subplot(3, 5, i + 1)
-        # display images in the subplots
-        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
-        # set title for each subplot
-        plt.title("Training: %i" % label)
-
-    # display the plot
-    plt.show()
-
-    # Predict half the images
-    labels_expected = digits_data.target[img_samples // 2:]
-    img_predicted = classify.predict(img[img_samples // 2:])
-
-    images_predictions = list(zip(digits_data.images[img_samples // 2:], img_predicted))
-
-    for i, (image, predict) in enumerate(images_predictions[:10]):
-        # initialize the subplot of size 3x5
-        plt.subplot(3, 5, i + 1)
-        # turn of the axis values (the labels for each value in x and y axis)
-        plt.axis('off')
-        # display the predicted images in the subplot
-        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
-        # set the title for each subplot in the main plot
-        plt.title("Predict: %i" % predict)
-
-    plt.show()
-
-    print("Classification Report %s:\n%s\n"
-          % (classify, metrics.classification_report(labels_expected, img_predicted)))
-    print("Confusion matrix:\n%s" % metrics.confusion_matrix(labels_expected, img_predicted))
 
 
 # Give list of images that are made up of 64 values each
@@ -186,7 +129,7 @@ def process_image(filename):
 
 # Example of model predicting 30 images
 # Actual value labels are given
-def main(train_model=True):
+def custom_example(train_model=True):
     model_filename = "handdrawn_digits_model.pkl"
     if train_model:
         print("Training new hand drawn digits model.")
@@ -205,6 +148,64 @@ def main(train_model=True):
     # List of labels that show what each digit actually is
     actual_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     predict_images(images, model, actual_values)
+
+
+# Predicts half of the images dataset
+def website_example():
+    # This bit trains the model to predict digits
+    # Loads the data
+    digits_data = load_digits()
+    # Get the total number of samples
+    img_samples = len(digits_data.images)
+    # Get the handwritten images
+    img = digits_data.images.reshape(img_samples, -1)
+    # Get the target labels
+    labels = digits_data.target
+    # The model
+    classify = svm.SVC(gamma=0.001)
+    # flatten sample images are stored in img variable
+    img_half = img[:img_samples // 2]
+    # target labels are stored in labels variable
+    labels_half = labels[:img_samples // 2]
+    # Training: First is half the images, second is all the images
+    # classify.fit(img_half, labels_half)
+    classify.fit(img, labels)
+    # End training
+
+    images = list(zip(digits_data.images, digits_data.target))
+    plt.figure(figsize=(4, 4))
+    for i, (image, label) in enumerate(images[:10]):
+        # initializing subplot of 3x5
+        plt.subplot(3, 5, i + 1)
+        # display images in the subplots
+        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
+        # set title for each subplot
+        plt.title("Training: %i" % label)
+
+    # display the plot
+    plt.show()
+
+    # Predict half the images
+    labels_expected = digits_data.target[img_samples // 2:]
+    img_predicted = classify.predict(img[img_samples // 2:])
+
+    images_predictions = list(zip(digits_data.images[img_samples // 2:], img_predicted))
+
+    for i, (image, predict) in enumerate(images_predictions[:10]):
+        # initialize the subplot of size 3x5
+        plt.subplot(3, 5, i + 1)
+        # turn of the axis values (the labels for each value in x and y axis)
+        plt.axis('off')
+        # display the predicted images in the subplot
+        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
+        # set the title for each subplot in the main plot
+        plt.title("Predict: %i" % predict)
+
+    plt.show()
+
+    print("Classification Report %s:\n%s\n"
+          % (classify, metrics.classification_report(labels_expected, img_predicted)))
+    print("Confusion matrix:\n%s" % metrics.confusion_matrix(labels_expected, img_predicted))
 
 
 class ImagePredictor:
@@ -255,8 +256,8 @@ if len(sys.argv) > 1:
     command = sys.argv[1]
 if command is None or command == "help":
     print("Arguments: help, run, main, website-example, custom")
-elif command == "main":
-    main(False)
+elif command == "custom-example":
+    custom_example(False)
 elif command == "run":
     run()
 elif command == "website-example":
