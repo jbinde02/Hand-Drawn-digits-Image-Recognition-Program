@@ -45,9 +45,9 @@ def create_trained_model(model_filename, training_set_path):
     digits_data = list()
     labels = list()
 
-    for (root, dirs, files) in os.walk(os.path.join(os.path.dirname(__file__), 'handdrawn_numbers')):
+    for (root, dirs, files) in os.walk(os.path.join(os.path.dirname(__file__), training_set_path)):
         for file in files:
-            digits_data.append(process_image(os.path.join(os.path.dirname(__file__), 'handdrawn_numbers', file)))
+            digits_data.append(process_image(os.path.join(os.path.dirname(__file__), training_set_path, file)))
             labels.append(file.split('_')[0][1])
     classify = svm.SVC()
     classify.fit(digits_data, labels)
@@ -263,10 +263,19 @@ elif command == "run":
 elif command == "website-example":
     website_example()
 elif command == "custom":
-    create_trained_model("dog", "")
-    model = load_model(os.path.join(os.path.dirname(__file__), "dog.pkl"))
-    img_predictor = ImagePredictor(model)
-    img_predictor.display_user_interface()
+    try:
+        #Create model if provided second argument
+        try:
+            create_trained_model(sys.argv[2], sys.argv[3])
+            print("New model named {} created".format(sys.argv[2]))
+        except IndexError as ie:
+            print("Loading existing model named {}".format(sys.argv[2]))
+        model = load_model(os.path.join(os.path.dirname(__file__), sys.argv[2]+".pkl"))
+        img_predictor = ImagePredictor(model)
+        img_predictor.display_user_interface()
+    except Exception as e:
+        print(e)
+        print("Arguments for custom: 1. name_of_model_file Optional(2. local_path_to_images_directory_to_train_with)")
 
 # Precision = True Positive/(True Positive + False Positive)
 # Recall = True Positive/(True Positive + False Negative)
