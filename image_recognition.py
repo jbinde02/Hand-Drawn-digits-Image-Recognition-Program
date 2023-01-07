@@ -73,7 +73,7 @@ def predict_images(images, model, labels_expected=None, plot_results=True):
         # Turn input image into numpy.ndarray
         if not isinstance(images[i], numpy.ndarray):
             try:
-                print("Converting input image of type" + str(type(images[i])) + " to type numpy.ndarray")
+                # print("Converting input image of type" + str(type(images[i])) + " to type numpy.ndarray")
                 images[i] = numpy.array(images[i])
             except Exception as e:
                 print(e)
@@ -262,20 +262,26 @@ elif command == "run":
     run()
 elif command == "website-example":
     website_example()
-elif command == "custom":
+elif command == "create-model":
     try:
-        #Create model if provided second argument
-        try:
-            create_trained_model(sys.argv[2], sys.argv[3])
-            print("New model named {} created".format(sys.argv[2]))
-        except IndexError as ie:
-            print("Loading existing model named {}".format(sys.argv[2]))
-        model = load_model(os.path.join(os.path.dirname(__file__), sys.argv[2]+".pkl"))
+        model_filename = sys.argv[2]
+        training_set_path = sys.argv[3]
+        create_trained_model(model_filename, training_set_path)
+        print("New model named {} created".format(model_filename))
+    except Exception as e:
+        print(e)
+        print("Arguments for create-Model: 1. name_of_model_file    2. local_path_to_images_directory_to_train_with")
+elif command == "use-model":
+    try:
+        model_filename = sys.argv[2]
+        print("Loading existing model named {}".format(model_filename))
+        model = load_model(os.path.join(os.path.dirname(__file__), model_filename + ".pkl"))
         img_predictor = ImagePredictor(model)
         img_predictor.display_user_interface()
     except Exception as e:
         print(e)
-        print("Arguments for custom: 1. name_of_model_file Optional(2. local_path_to_images_directory_to_train_with)")
+        print("Arguments for use-Model: 1. name_of_model_file")
+
 
 # Precision = True Positive/(True Positive + False Positive)
 # Recall = True Positive/(True Positive + False Negative)
