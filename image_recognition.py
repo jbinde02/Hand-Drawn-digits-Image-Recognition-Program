@@ -11,6 +11,7 @@ from PIL import Image
 from sklearn.datasets import load_digits
 from sklearn import metrics
 from sklearn import svm
+from sklearn import preprocessing
 
 
 # https://howtocreateapps.com/image-recognition-python/
@@ -78,7 +79,7 @@ def predict_images(images, model, labels_expected=None, plot_results=True):
             except Exception as e:
                 print(e)
                 print("Failure to convert image input to type numpy.ndarray")
-        numpy.array([labels_expected])
+        numpy.array([labels_expected]) #TODO: Why does this even exist?
 
     # Predict with trained model
     imgs_predicted = model.predict(images)
@@ -126,6 +127,14 @@ def process_image(filename):
     normalized_pixels = list(map(lambda pix: round((pix - min_pixel) / (max_pixel - min_pixel) * 15), formatted_pixels))
     return normalized_pixels
 
+# Process images to be similar to what the model was trained with
+def process_image_new(filename):
+    img = numpy.array(Image.open(filename))  # 64x64 size drawing of digit
+    scaler = preprocessing.StandardScaler.fit(img)
+    print(scaler)
+    scaler.transform(img)
+    return normalized_pixels
+
 
 # Example of model predicting 30 images
 # Actual value labels are given
@@ -139,7 +148,7 @@ def custom_example(train_model=True):
     # Get hand drawn number files and process each, and putting them in a list
     handdrawn_numbers_path = os.path.dirname(os.path.realpath(__file__))
     images = []
-    for (root, dirs, file) in os.walk(handdrawn_numbers_path):
+    for (root, dirs, file) in os.walk(os.path.join(os.path.dirname(__file__), "handdrawn_numbers")):
         for f in file:
             if '.png' in f:
                 images.append(process_image(os.path.join(root, f)))
@@ -255,7 +264,7 @@ command = None
 if len(sys.argv) > 1:
     command = sys.argv[1]
 if command is None or command == "help":
-    print("Arguments: help, run, main, website-example, custom")
+    print("Arguments: help, run, website-example, create-model, use-model")
 elif command == "custom-example":
     custom_example(False)
 elif command == "run":
