@@ -9,6 +9,7 @@ Libraries used include
 * matplotlib - Graphing
 * Pillow - Image processing
 * scikit-learn - ML model
+* SKimage - Image processing
 
 ## Usage
 (Download and extract) or clone this repository to your device. Install the required libraries in requirements.txt using a package installer such as Pip.
@@ -17,7 +18,7 @@ Run the script. When no arguments are provided it will automatically run the hel
 
 ## Roadmap
 I would like to continue working on this program. Some items include...
-* Use SKLearn preproccessing methods for increasing accuracy
+* ~~Use SKLearn preproccessing methods for increasing accuracy~~ (Simplifies but proably not more accurate. Depends on if model and image to be predicted are procced the same)
 * ~~Ability to load own images to create a new model~~
 * ~~Selecting a model the program will use~~
 * ~~Inputing images one at a time~~
