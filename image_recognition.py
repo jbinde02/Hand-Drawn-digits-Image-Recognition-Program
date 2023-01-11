@@ -3,6 +3,8 @@ import pickle
 import sys
 import tkinter as tk
 from tkinter import filedialog
+
+import matplotlib.colors
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -12,6 +14,7 @@ from sklearn.datasets import load_digits
 from sklearn import metrics
 from sklearn import svm
 from sklearn import preprocessing
+from skimage import io, transform, util
 
 
 # https://howtocreateapps.com/image-recognition-python/
@@ -107,8 +110,8 @@ def predict_images(images, model, labels_expected=None, plot_results=True):
     return imgs_predicted, images[0]
 
 
-# Process images to be similar to what the model was trained with
-def process_image(filename):
+# Process images to be similar to what the premade model was trained with
+def process_image_premade(filename):
     img = Image.open(filename)  # 64x64 size drawing of digit
     img = img.resize((8, 8))  # resize to 8x8
     pixels = list(img.getdata())
@@ -127,13 +130,14 @@ def process_image(filename):
     normalized_pixels = list(map(lambda pix: round((pix - min_pixel) / (max_pixel - min_pixel) * 15), formatted_pixels))
     return normalized_pixels
 
-# Process images to be similar to what the model was trained with
-def process_image_new(filename):
-    img = numpy.array(Image.open(filename))  # 64x64 size drawing of digit
-    scaler = preprocessing.StandardScaler.fit(img)
-    print(scaler)
-    scaler.transform(img)
-    return normalized_pixels
+
+# Process images using the skimage library
+def process_image(filename):
+    img = io.imread(filename, as_gray=True)
+    img = transform.resize(img, (8,8))
+    img = util.invert(img)
+    img = img.flatten()
+    return img
 
 
 # Example of model predicting 30 images
@@ -151,7 +155,7 @@ def custom_example(train_model=True):
     for (root, dirs, file) in os.walk(os.path.join(os.path.dirname(__file__), "handdrawn_numbers")):
         for f in file:
             if '.png' in f:
-                images.append(process_image(os.path.join(root, f)))
+                images.append(process_image_premade(os.path.join(root, f)))
 
     # Predict drawn digit
     # List of labels that show what each digit actually is
@@ -290,6 +294,8 @@ elif command == "use-model":
     except Exception as e:
         print(e)
         print("Arguments for use-Model: 1. name_of_model_file")
+elif command == "test":
+    pass
 
 
 # Precision = True Positive/(True Positive + False Positive)
